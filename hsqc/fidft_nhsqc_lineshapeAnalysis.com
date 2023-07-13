@@ -1,7 +1,7 @@
 #!/bin/tcsh
 
 # Lineshape analysis, such as TITAN, requires -fn EM for apodization
-
+# To avoid confusion later can name the titration data point here:
 setenv NAME nhsqc_1.5eq
 
 bruk2pipe -in ser \
@@ -21,14 +21,14 @@ nmrPipe -in ${NAME}.fid                         \
 | nmrPipe -fn EM -c 0.5 -lb 10                  \
 | nmrPipe -fn ZF -size 2048                     \
 | nmrPipe -fn FT -verb                          \
-| nmrPipe -fn PS -p0 -184.8 -p1 -4.7 -di        \
+| nmrPipe -fn PS -p0 0 -p1 0 -di                \
 | nmrPipe -fn POLY -auto -ord 0                 \
 | nmrPipe -fn EXT -x1 6.0ppm -xn 10.0ppm -sw    \
 | nmrPipe -fn TP                                \
 | nmrPipe -fn EM -c 0.5 -lb 20                  \
 | nmrPipe -fn ZF -size 2048                     \
 | nmrPipe -fn FT -verb                          \
-| nmrPipe -fn PS -p0 90 -p1 0 -di               \
+| nmrPipe -fn PS -p0 -90 -p1 0 -di              \
 | nmrPipe -fn POLY -auto -ord 0                 \
 | nmrPipe -fn TP                                \
 | nmrPipe -fn POLY -auto -ord 0                 \
