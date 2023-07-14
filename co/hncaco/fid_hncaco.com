@@ -4,8 +4,8 @@ setenv NAME hncaco
 
 bruk2pipe -in ser \
   -bad 0.0 -ext -aswap -AMX -decim 2040 -dspfvs 20 -grpdly 67.9862060546875  \
-  -xN              1024  -yN                64  -zN                62  \
-  -xT               512  -yT                32  -zT                31  \
+  -xN              1024  -yN                64  -zN                64  \
+  -xT               512  -yT                32  -zT                32  \
   -xMODE            DQD  -yMODE  Echo-AntiEcho  -zMODE        Complex  \
   -xSW         9803.922  -ySW         2554.931  -zSW         1761.184  \
   -xOBS         700.183  -yOBS          70.957  -zOBS         176.091  \
