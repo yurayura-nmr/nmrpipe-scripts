@@ -14,20 +14,20 @@ bruk2pipe -in ser \
   -ndim               2  -aq2D         Complex  \
   -out ${NAME}.fid -verb -ov
 
-nmrPipe -in ${NAME}.fid				                        \
-| nmrPipe -fn SOL				                            \
-| nmrPipe -fn SP -c 0.5 -off 0.35 -end 0.95 -size 512	    \
-| nmrPipe -fn ZF -size 4096			                        \
-| nmrPipe -fn FT -verb				                        \
-| nmrPipe -fn PS -p0 0 -p1 0 -di	                	    \
-| nmrPipe -fn EXT -x1 6.0ppm -xn 11.0ppm -sw	            \
-| nmrPipe -fn TP				                            \
-| nmrPipe -fn LP -auto				                        \
+nmrPipe -in ${NAME}.fid                                     \
+| nmrPipe -fn SOL                                           \
+| nmrPipe -fn SP -c 0.5 -off 0.35 -end 0.95 -size 512       \
+| nmrPipe -fn ZF -size 4096                                 \
+| nmrPipe -fn FT -verb                                      \
+| nmrPipe -fn PS -p0 0 -p1 0 -di                            \
+| nmrPipe -fn EXT -x1 6.0ppm -xn 11.0ppm -sw                \
+| nmrPipe -fn TP                                            \
+| nmrPipe -fn LP -auto                                      \
 | nmrPipe -fn SP -c 0.5 -off 0.5 -end 1 -pow 2 -size 256    \
-| nmrPipe -fn ZF -size 1024			                        \
-| nmrPipe -fn FT -verb -alt			                        \
-| nmrPipe -fn PS -p0 0 -p1 0 -di   		                    \
+| nmrPipe -fn ZF -size 1024                                 \
+| nmrPipe -fn FT -verb -alt                                 \
+| nmrPipe -fn PS -p0 0 -p1 0 -di                            \
 | nmrPipe -fn POLY -auto -ord 0                             \
-| nmrPipe -fn TP				                            \
-| nmrPipe -fn POLY -auto -ord 0			                    \
+| nmrPipe -fn TP                                            \
+| nmrPipe -fn POLY -auto -ord 0                             \
 | nmrPipe -out ${NAME}.ft2 -ov
