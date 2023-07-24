@@ -41,20 +41,20 @@ xyz2pipe -in fid/${NAME}%03d.ft3 -z             \
 | nmrPipe -fn ZF -inv                           \
 | nmrPipe -fn LP -f -auto                       \
 | nmrPipe -fn SP -c 0.5 -off 0.5 -end 1 -pow 2  \
-| nmrPipe -fn ZF -auto				\
-| nmrPipe -fn FT -verb 				\
-| nmrPipe -fn PS -hdr -di			\
-| nmrPipe -fn POLY -auto -ord 0			\
+| nmrPipe -fn ZF -auto                          \
+| nmrPipe -fn FT -verb                          \
+| nmrPipe -fn PS -hdr -di                       \
+| nmrPipe -fn POLY -auto -ord 0                 \
 | pipe2xyz -out fid/${NAME}%03d.ft3 -z -inPlace
 
-xyz2pipe -in fid/${NAME}%03d.ft3 -x		\
-| nmrPipe -fn ZTP				\
-| nmrPipe -fn POLY -auto -ord 0			\
-| nmrPipe -fn ZTP				\
-| nmrPipe -fn POLY -auto -ord 0			\
+xyz2pipe -in fid/${NAME}%03d.ft3 -x             \
+| nmrPipe -fn ZTP                               \
+| nmrPipe -fn POLY -auto -ord 0                 \
+| nmrPipe -fn ZTP                               \
+| nmrPipe -fn POLY -auto -ord 0                 \
 | pipe2xyz -x -out fid/${NAME}%03d.ft3 -inPlace
 
-xyz2pipe -in fid/${NAME}%03d.ft3 -x 		\
+xyz2pipe -in fid/${NAME}%03d.ft3 -x             \
 | pipe2xyz -nv -out ./${NAME}.nv
 
 proj3D.tcl -in fid/${NAME}%03d.ft3
