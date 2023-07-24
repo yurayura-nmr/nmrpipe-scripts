@@ -28,19 +28,19 @@ xyz2pipe -in fid/${NAME}%03d.ft3 -z             \
 xyz2pipe -in fid/${NAME}%03d.ft3 -y             \
 | nmrPipe -fn LP -f -auto                       \
 | nmrPipe -fn SP -c 0.5 -off 0.5 -end 1 -pow 2	\
-| nmrPipe -fn ZF -auto				\
-| nmrPipe -fn FT -alt -verb			\
-| nmrPipe -fn PS -p0 0 -p1 0 -di		\
-| nmrPipe -fn POLY -auto -ord 0			\
+| nmrPipe -fn ZF -auto                          \
+| nmrPipe -fn FT -alt -verb                     \
+| nmrPipe -fn PS -p0 0 -p1 0 -di                \
+| nmrPipe -fn POLY -auto -ord 0                 \
 | pipe2xyz -out fid/${NAME}%03d.ft3 -y -inPlace
 
-xyz2pipe -in fid/${NAME}%03d.ft3 -z		\
-| nmrPipe -fn HT -auto				\
-| nmrPipe -fn PS -inv -hdr			\
-| nmrPipe -fn FT -inv 				\
-| nmrPipe -fn ZF -inv				\
-| nmrPipe -fn LP -f -auto 			\
-| nmrPipe -fn SP -c 0.5 -off 0.5 -end 1 -pow 2	\
+xyz2pipe -in fid/${NAME}%03d.ft3 -z             \
+| nmrPipe -fn HT -auto                          \
+| nmrPipe -fn PS -inv -hdr                      \
+| nmrPipe -fn FT -inv                           \
+| nmrPipe -fn ZF -inv                           \
+| nmrPipe -fn LP -f -auto                       \
+| nmrPipe -fn SP -c 0.5 -off 0.5 -end 1 -pow 2  \
 | nmrPipe -fn ZF -auto				\
 | nmrPipe -fn FT -verb 				\
 | nmrPipe -fn PS -hdr -di			\
