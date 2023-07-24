@@ -4,29 +4,29 @@ setenv NAME hccconh
 
 rm -f fid/*.ft3
 
-xyz2pipe -in fid/${NAME}%03d.fid -z         \
-| nmrPipe -fn ZTP                           \
+xyz2pipe -in fid/${NAME}%03d.fid -z             \
+| nmrPipe -fn ZTP                               \
 | pipe2xyz -out fid/${NAME}%03d.ft3 -z -ov
 
-xyz2pipe -in fid/${NAME}%03d.ft3 -x         \
-| nmrPipe -fn SOL				\
-| nmrPipe -fn SP -c 0.5 -off 0.35 -end 0.95	\
-| nmrPipe -fn ZF -auto				\
-| nmrPipe -fn FT -verb				\
-| nmrPipe -fn PS -p0 114 -p1 0 -di		\
-| nmrPipe -fn POLY -auto -ord 0			\
-| nmrPipe -fn EXT -x1 6.3ppm -xn 10.5ppm -sw	\
+xyz2pipe -in fid/${NAME}%03d.ft3 -x             \
+| nmrPipe -fn SOL                               \
+| nmrPipe -fn SP -c 0.5 -off 0.35 -end 0.95     \
+| nmrPipe -fn ZF -auto                          \
+| nmrPipe -fn FT -verb                          \
+| nmrPipe -fn PS -p0 0 -p1 0 -di                \
+| nmrPipe -fn POLY -auto -ord 0                 \
+| nmrPipe -fn EXT -x1 6.3ppm -xn 11ppm -sw      \
 | pipe2xyz -out fid/${NAME}%03d.ft3 -x
 
-xyz2pipe -in fid/${NAME}%03d.ft3 -z		\
-| nmrPipe -fn ZF -auto				\
-| nmrPipe -fn FT -verb				\
-| nmrPipe -fn PS -p0 -90 -p1 0 -di   		\
-| nmrPipe -fn POLY -auto -ord 0			\
+xyz2pipe -in fid/${NAME}%03d.ft3 -z             \
+| nmrPipe -fn ZF -auto                          \
+| nmrPipe -fn FT -verb                          \
+| nmrPipe -fn PS -p0 -90 -p1 0 -di              \
+| nmrPipe -fn POLY -auto -ord 0                 \
 | pipe2xyz -out fid/${NAME}%03d.ft3 -z -inPlace
 
-xyz2pipe -in fid/${NAME}%03d.ft3 -y		\
-| nmrPipe -fn LP -f -auto 			\
+xyz2pipe -in fid/${NAME}%03d.ft3 -y             \
+| nmrPipe -fn LP -f -auto                       \
 | nmrPipe -fn SP -c 0.5 -off 0.5 -end 1 -pow 2	\
 | nmrPipe -fn ZF -auto				\
 | nmrPipe -fn FT -alt -verb			\
