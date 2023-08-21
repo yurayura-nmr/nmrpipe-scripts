@@ -24,3 +24,5 @@ So, we can use an iterative process::
   (or)
   Confirm some of FLYA's new assignments manually (and go back to step 1)
   
+When adding new assignments for the next FLYA iteration, may be a good idea is to start with the dark blue colored (high confidence) peaks in flya.pdf.
+Leave light blue ones for later. They might indeed be absent from the input peak lists and thus impossible to find for FLYA.
