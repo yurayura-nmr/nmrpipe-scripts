@@ -261,7 +261,8 @@ For larger proteins, often it is not possible to completely rely on FLYA (it wil
 In that case, it can be helpful to use the partial assignment that was manually confirmed in CCPN (based on FLYA but with user-confirmation) as a reference.
 To CALC.cya::
 
-  flya assignpeaks=$peaks structure=input.pdb shiftreference=ref.prot
+  shiftassing_fix:=fix.prot
+  flya assignpeaks=$peaks structure=input.pdb shiftreference=fix.prot
 
 , where ref.prot is the CCPN-exported list of chemical shifts that were confirmed by the user.
 The resulting flya.pdf will then color in red the points where FLYA disagrees with the user-input.
