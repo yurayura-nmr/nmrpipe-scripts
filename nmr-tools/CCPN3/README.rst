@@ -26,6 +26,16 @@ Peak pick order
 2. CA: HNcoCA > HNCA
 3. CB: CBCOcoNH > HNCACB
 
+Making connections
+------------------
+
+bb - backbone assignment panel
+
+1. define 1 search window
+2. define 1 match window
+3. double-click one of the X-1 residues 
+4. select the strip where match was found then, drag-and-drop the strip the (-1) strip (from the search window) onto the matched (i) residue. This should establish a connection.
+
 
 Troubleshooting
 ---------------
