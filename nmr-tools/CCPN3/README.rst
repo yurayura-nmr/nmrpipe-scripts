@@ -25,3 +25,11 @@ Peak pick order
 1. CO: HNCO > HNcaCO
 2. CA: HNcoCA > HNCA
 3. CB: CBCOcoNH > HNCACB
+
+
+Troubleshooting
+---------------
+
+Known bug 1::
+
+  Error - "NoneType has no attribute ..." - save project and open project.
