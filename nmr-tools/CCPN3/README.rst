@@ -35,7 +35,8 @@ bb - backbone assignment panel
 2. define 1 match window
 3. double-click one of the X-1 residues 
 4. select the strip where match was found then, drag-and-drop the strip the (-1) strip (from the search window) onto the matched (i) residue. This should establish a connection.
-
+5. this will make a new "nmr chain" (a stretch) of connected residues, but not yet sure in the sequence where that is used.
+6. to attach to the sequence, drag and drop a residue from sequence viewer onto the sequence below that.
 
 Troubleshooting
 ---------------
