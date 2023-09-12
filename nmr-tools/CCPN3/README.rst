@@ -33,3 +33,4 @@ Troubleshooting
 Known bug 1::
 
   Error - "NoneType has no attribute ..." - save project and open project.
+  In peak and assign (shortcut PA) click settings tab to be able to navigate between different Carbon strips
