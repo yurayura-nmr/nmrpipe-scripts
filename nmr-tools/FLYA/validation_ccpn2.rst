@@ -6,19 +6,21 @@ At least, we have to make sure that the backbone connections established by FLYA
 
 In the backbone assignment panel of CCPN2:
 
-1. Make a query window:: 
+Make a query window:: 
   
   This will "query" from a (i-1) spectrum to find a fitting (i) residue in the other type of experiments.
   Experiments in queryC:
   HNCO
   HNcoCA
   CBCAcoNH
+  Set aspect ratio of window = 8; max. strips = 2 for now (not de novo assignment)
 
-2. Make a match window:: 
+Make a match window:: 
 
   This will contain possible matches for the (i-1) queries. It contains only (i) experiments.
   Experiments in matchC:
   HNcaCO
   HNCA
   HNCACB
+  Set aspect ratio of window = 8; max. strips = 2 for now (not de novo assignment)
 
