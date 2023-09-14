@@ -1,4 +1,14 @@
-# 1D NMR processing for chemical shift referencing (e.g., DSS proton shift)
+DSS addition to sample
+----------------------
+
+Sample::
+
+  0.2 mM DSS to sample (stock solution: 100 mM)
+  For example: 0.7 ul DSS stock solution for 350 ul sample
+
+1D NMR processing for chemical shift referencing (e.g., DSS proton shift)
+-------------------------------------------------------------------------
+  
 This folder contains 1D NMR processing scripts for a 1D proton NMR experiment. 
 
 Requires nmrpipe and tcsh (or csh), and python3 to be installed. 
