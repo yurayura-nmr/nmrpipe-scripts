@@ -4,18 +4,18 @@ setenv NAME ccconh
 
 rm -f fid/*.ft3
 
-xyz2pipe -in fid/${NAME}%03d.fid -z		\
-| nmrPipe -fn ZTP				\
+xyz2pipe -in fid/${NAME}%03d.fid -z         \
+| nmrPipe -fn ZTP                           \
 | pipe2xyz -out fid/${NAME}%03d.ft3 -z -ov
 
-xyz2pipe -in fid/${NAME}%03d.ft3 -x		\
-| nmrPipe -fn SOL				\
+xyz2pipe -in fid/${NAME}%03d.ft3 -x         \
+| nmrPipe -fn SOL                           \
 | nmrPipe -fn SP -c 0.5 -off 0.35 -end 0.95	\
-| nmrPipe -fn ZF -auto				\
-| nmrPipe -fn FT -verb				\
-| nmrPipe -fn PS -p0 -32 -p1 0 -di		\
-| nmrPipe -fn POLY -auto -ord 0			\
-| nmrPipe -fn EXT -x1 6.3ppm -xn 10.5ppm -sw	\
+| nmrPipe -fn ZF -auto                      \
+| nmrPipe -fn FT -verb                      \
+| nmrPipe -fn PS -p0 -32 -p1 0 -di          \
+| nmrPipe -fn POLY -auto -ord 0             \
+| nmrPipe -fn EXT -x1 6.3ppm -xn 11ppm -sw  \
 | pipe2xyz -out fid/${NAME}%03d.ft3 -x
 
 xyz2pipe -in fid/${NAME}%03d.ft3 -z		\
