@@ -7,7 +7,7 @@ bruk2pipe -verb -in ./ser \
   -xN              1024  -yN                48  -zN                80  \
   -xT               512  -yT                24  -zT                40  \
   -xMODE            DQD  -yMODE  Echo-AntiEcho  -zMODE        Complex  \
-  -xSW         7183.908  -ySW         1702.997  -zSW        10111.223  \
+  -xSW         9803.922  -ySW         2483.855  -zSW        11261.261  \
   -xOBS         600.133  -yOBS          60.818  -zOBS         150.909  \
   -xCAR           4.778  -yCAR         119.101  -zCAR          40.746  \
   -xLAB              HN  -yLAB               N  -zLAB               C  \
