@@ -16,7 +16,6 @@ bruk2pipe -in ser \
 
 nmrPipe -in ${NAME}.fid                         \
 | nmrPipe -fn SOL                               \
-#| nmrPipe -fn SP -c 0.5 -off 0.35 -end 0.95    \
 | nmrPipe -fn EM -c 0.5 -lb 10                  \
 | nmrPipe -fn ZF -size 2048                     \
 | nmrPipe -fn FT -verb                          \
@@ -24,9 +23,8 @@ nmrPipe -in ${NAME}.fid                         \
 | nmrPipe -fn POLY -auto -ord 0                 \
 | nmrPipe -fn EXT -x1 6.0ppm -xn 10.0ppm -sw    \
 | nmrPipe -fn TP                                \
-#| nmrPipe -fn LP -auto                         \
-#| nmrPipe -fn SP -c 0.5 -off 0.5 -end 1 -pow 1 \
-| nmrPipe -fn EM -c 0.5 -lb 20                  \
+| nmrPipe -fn LP -auto                         \
+| nmrPipe -fn EM -c 0.5 -lb 10                  \
 | nmrPipe -fn ZF -size 2048                     \
 | nmrPipe -fn FT -verb                          \
 | nmrPipe -fn PS -p0 90 -p1 0 -di               \
