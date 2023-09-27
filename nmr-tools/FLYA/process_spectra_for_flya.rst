@@ -69,6 +69,7 @@ Use the format converter -> xeasy -> peaks -> Write as cyana format.
 * Write as CYANA format - yes
 * Peak integration method - height
 * Force positive intensity - yes
+* Include assignments - NO *this will screw up the ccpn2flya converter currently*
 
 
 Map dimensions (see cyana demo flya folder for examples on format for each spectrum)::
