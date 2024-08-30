@@ -11,7 +11,10 @@ CCPN to FLYA converter
 2023/06/05 (Last update : python3)
 
 1) Use Format Converter in CCPN to write XEASY peak lists for each peak-picked spectrum.
+   It is not necessary to manually select the "correct order" of axes in FormatConverter, as this is handled by the script.
 2) Use this script to convert them to FLYA input peak lists.
+   For example:
+   ./ccpn2flya.py -hnca HNCA.peaks
 
 # Groups:
 #	NHSQC
