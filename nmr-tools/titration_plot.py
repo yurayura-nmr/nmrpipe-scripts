@@ -1,6 +1,22 @@
+"""
+Erik Walinda
+Kyoto University
+Graduate School of Medicine
+
+Titration Zoom Ups for publication.
+Full spectrum + individual ROIs
+2024/09/15 
+
+Requires:
+* nmrglue (conda install)
+* matplotlib
+
+Zoom-up liewidth: 1.0
+Full spectrum needs thinner linewidth
+"""
+
 import nmrglue as ng
 import matplotlib.pyplot as plt
-
 
 class Spectrum:
     def __init__(self, filepath, color, contour_levels, linewidth=1.0):
@@ -53,11 +69,6 @@ def calculate_aspect_ratio(user_x_lim, user_ylim):
 
     # Print the aspect ratio
     print(f"Aspect Ratio: {aspect_ratio}")
-
-
-
-# Zoom-up liewidth: 1.0
-# Full spectrum needs thinner linewidth
 
 def loadSpectra(globalScale):
     spectra = [
