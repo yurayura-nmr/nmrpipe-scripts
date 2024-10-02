@@ -29,6 +29,7 @@ In CCPN, open and assign the reference spectrum (1st nv file). Then,::
   FormatConverter -> Export -> NMRView -> filename.xpk
 
 If assignment is correctly done in CCPN, this should transfer the assignments to the peaklist.
+xpk file should need no manual editing and can be used just as it is in cpmg2glove below.
 
 Intensity extraction
 """"""""""""""""""""
@@ -36,13 +37,24 @@ Intensity extraction
 6.	Move to "spect" folder
 7.  Modify pkfit.in: verify / update the 15N base frequency (can easily get the 15N frequency from grep BF3 ../acqu). Make sure constant CPMG time is correct (d20 in pulseprogram). 1/t_CP values are obtained from our spreadsheet (it lists all cases like CPMG time = 30 ms, 40 ms, 50 ms ...).
 8.	Start intensity extraction.
+
 In terminal:: 
 
   pkfiti –i pkfit.in –o pkfit.out
 
 9.	“Int” file will be created
-10.	cpmg2glove –i Int_### 298>glove.in (Check the measurement temperature)
+10.	Create GLOVE input file. (Check the measurement temperature)
+
+In terminal::
+
+  cpmg2glove –i Int_ 298 > glove.in 
+
+Fitting of relaxation dispersion profiles
+"""""""""""""""""""""""""""""""""""""""""
+
 11.	Create a new folder
 12.	Move “glove.in” to the folder
 13.	glove –dvx
 14.	mplot -pdf
+
+If constant profile, change function to: CPMG_CONST
