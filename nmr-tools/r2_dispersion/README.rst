@@ -19,11 +19,21 @@ where 600r2 is just a name that will be used for the spectrum files.
 
 One can now visualize the original HSQC (ft2) and the R2 dispersion reference spectrum (nv) in CCPN to make sure that peak lists and assignments will be fine when transferred.
 
+Prepare assigned peaklist
+"""""""""""""""""""""""""
+
+5.	Modify xpk file
+
+In CCPN, open and assign the reference spectrum (1st nv file). Then,::
+
+  FormatConverter -> Export -> NMRView -> filename.xpk
+
+If assignment is correctly done in CCPN, this should transfer the assignments to the peaklist.
+
 Intensity extraction
 """"""""""""""""""""
 
-5.	Move to "spect" folder
-6.	Modify xpk file 
+6.	Move to "spect" folder
 7.  Modify pkfit.in: verify / update the 15N base frequency (can easily get the 15N frequency from grep BF3 ../acqu). Make sure constant CPMG time is correct (d20 in pulseprogram). 1/t_CP values are obtained from our spreadsheet (it lists all cases like CPMG time = 30 ms, 40 ms, 50 ms ...).
 8.	pkfiti –i pkfit.in –o pkfit.out
 9.	“Int” file will be created
