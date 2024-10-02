@@ -54,7 +54,10 @@ Fitting of relaxation dispersion profiles
 
 11.	Create a new folder
 12.	Move “glove.in” to the folder
-13.	glove –dvx
-14.	mplot -pdf
 
-If constant profile, change function to: CPMG_CONST
+Execute fitting in the terminal::
+
+  glove –dvx
+  mplot -pdf
+
+If constant profile, change function to: CPMG_CONST in glove.in.
