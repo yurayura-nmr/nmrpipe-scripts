@@ -12,7 +12,9 @@ To process pseudo3D:
 
 Execute (to process all 19 spectra or so):: 
 
-  ft2d_all R2 -nv
+  ft2d_all 600r2 -nv
+
+where 600r2 is just a name that will be used for the spectrum files.
 
 One can now visualize the original HSQC (ft2) and the R2 dispersion reference spectrum (nv) in CCPN to make sure that peak lists and assignments will be fine when transferred.
 
@@ -20,7 +22,7 @@ Intensity extraction
 """"""""""""""""""""
 
 5.	Move to "spect" folder
-6.	Modify xpk file and pkfit.in: check frequency (grep BF acuq)
+6.	Modify xpk file and pkfit.in: verify / update the 15N base frequency (can easily get the 15N frequency from grep BF3 ../acqu)
 7.	pkfiti –i pkfit.in –o pkfit.out
 8.	“Int” file will be created
 9.	cpmg2glove –i Int_### 298>glove.in (Check the measurement temperature)
