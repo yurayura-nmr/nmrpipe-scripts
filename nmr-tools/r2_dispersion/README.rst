@@ -63,3 +63,10 @@ Execute fitting in the terminal::
 If constant profile, change function to: CPMG_CONST in glove.in or use cpmg2glove to do it faster for all residues::
 
   cpmg2glove -t CONST -i ../Int_60.81 298 > glove.in
+
+Publication quality (SI)
+""""""""""""""""""""""""
+
+If all glove plots should be included in the Supporting Information, copy & pasting ghostscript-conversions of the plot.pdf is the easiest option. After installing hostscript in chocolatey::
+
+   gswin64c -sDEVICE=png16m -r1200 -o output_%d.png -dLastPage=3 plot.pdf
