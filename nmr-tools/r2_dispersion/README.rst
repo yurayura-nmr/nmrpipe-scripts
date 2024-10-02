@@ -60,4 +60,6 @@ Execute fitting in the terminal::
   glove –dvx
   mplot -pdf
 
-If constant profile, change function to: CPMG_CONST in glove.in.
+If constant profile, change function to: CPMG_CONST in glove.in or use cpmg2glove to do it faster for all residues::
+
+  cpmg2glove -t CONST -i ../Int_60.81 298 > glove.in
