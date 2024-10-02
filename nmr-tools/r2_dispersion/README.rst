@@ -24,11 +24,11 @@ Intensity extraction
 
 5.	Move to "spect" folder
 6.	Modify xpk file 
-6.  Modify pkfit.in: verify / update the 15N base frequency (can easily get the 15N frequency from grep BF3 ../acqu). Make sure constant CPMG time is correct (d20 in pulseprogram). 1/t_CP values are obtained from our spreadsheet (it lists all cases like CPMG time = 30 ms, 40 ms, 50 ms ...).
-7.	pkfiti –i pkfit.in –o pkfit.out
-8.	“Int” file will be created
-9.	cpmg2glove –i Int_### 298>glove.in (Check the measurement temperature)
-10.	Create a new folder
-11.	Move “glove.in” to the folder
-12.	glove –dvx
-13.	mplot -pdf
+7.  Modify pkfit.in: verify / update the 15N base frequency (can easily get the 15N frequency from grep BF3 ../acqu). Make sure constant CPMG time is correct (d20 in pulseprogram). 1/t_CP values are obtained from our spreadsheet (it lists all cases like CPMG time = 30 ms, 40 ms, 50 ms ...).
+8.	pkfiti –i pkfit.in –o pkfit.out
+9.	“Int” file will be created
+10.	cpmg2glove –i Int_### 298>glove.in (Check the measurement temperature)
+11.	Create a new folder
+12.	Move “glove.in” to the folder
+13.	glove –dvx
+14.	mplot -pdf
