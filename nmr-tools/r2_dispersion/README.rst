@@ -1,9 +1,10 @@
+To process pseudo3D
+===================
+
 Relaxation dispersion data are acquired as pseudo-3D experiments.
 
 FID processing and Fourier transform
-
-To process pseudo3D:
-""""""""""""""""""""
+""""""""""""""""""""""""""""""""""""
 
 1.	Execute ”fid_pseudo3d.com" where ser file exists: modify this file by using bruker script of NMRpipe; don't forget to exchange y and z (should be xzy in fid.com). x: 1H, z: 15N, y: pseudo (1 / tau_cp) dimension
 2.	Move to "fid" folder and put "ft.com" in this folder (rename ft_pseudo3d.com as ft.com)
