@@ -70,3 +70,5 @@ Publication quality (SI)
 If all glove plots should be included in the Supporting Information, copy & pasting ghostscript-conversions of the plot.pdf is the easiest option. After installing hostscript in chocolatey::
 
    gswin64c -sDEVICE=png16m -r1200 -o output_%d.png -dLastPage=3 plot.pdf
+
+Make sure to turn off image compression in Word or this nice picture creation was for nothing!^-^
