@@ -123,7 +123,8 @@ def calc(SFO1, O1, SFO2, O2, SFO3, O3, DSS_ppm):
 
     conversion_factor_hydrogen = Decimal(1)
     conversion_factor_carbon   = Decimal(0.251449530)
-    conversion_factor_nitrogen = Decimal(0.101329118)  
+    conversion_factor_nitrogen = Decimal(0.101329118)
+    conversion_factor_fluorine = Decimal(0.94094008)
 
     # Calculate: Carrier frequency (spectral center, proton)
     hydrogen_sf_Hz = hydrogen_sf * Decimal(1E6)             # Convert to Hz since O1 is read in as Hz but SFO1 is read in as MHz
@@ -138,6 +139,7 @@ def calc(SFO1, O1, SFO2, O2, SFO3, O3, DSS_ppm):
     zero_frequency_hydrogen = DSS_shift_MHz * conversion_factor_hydrogen
     zero_frequency_carbon   = DSS_shift_MHz * conversion_factor_carbon
     zero_frequency_nitrogen = DSS_shift_MHz * conversion_factor_nitrogen
+    zero_frequency_fluorine = DSS_shift_MHz * conversion_factor_fluorine
 
     center_hydrogen = ((hydrogen_sf - zero_frequency_hydrogen) / zero_frequency_hydrogen) * Decimal(1E6) # in ppm. SR = 0
     center_carbon   = ((carbon_sf   - zero_frequency_carbon)   / zero_frequency_carbon)   * Decimal(1E6) # in ppm
