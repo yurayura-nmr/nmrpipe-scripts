@@ -1,5 +1,10 @@
 #!/bin/csh
 
+# Execute this in fid folder.
+# For example ./ft_hnNOE.com 1 for reference
+# and ~ 2 for NOE
+# Then, read in NV files into CCPN (they have the correct 2D header, whereas ft2 has pseudo-3D header)
+
 setenv FILE $argv[1]
 
 nmrPipe -in ${FILE}.fid					\
@@ -19,5 +24,4 @@ nmrPipe -in ${FILE}.fid					\
 | nmrPipe -fn EXT -x1 5.7ppm -xn 9.7ppm -sw		\
 | nmrPipe -out ${FILE}.ft2 -ov
 
-#pipe2xyz -nv -in ${FILE}.ft2 -out ${FILE}.nv -ov
-#pipe2ucsf ${FILE}.ft2 ${FILE}.ucsf
+pipe2xyz -nv -in ${FILE}.ft2 -out ${FILE}.nv -ov
