@@ -83,6 +83,6 @@ Check:
 
 If everything looks OK — **great job!** You’ve completed Part 1. Next comes **phasing and further processing**.
 
-[See additional info in README2.md](./README2.md)
+[Continue to Part II](./README2.md)
 
 Let me know if you have questions!
