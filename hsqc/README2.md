@@ -38,9 +38,10 @@ In `nmrDraw`:
 
    * Watch the 1D projection update as you move it.
 3. Your goal:
-   ✅ All peaks should be **positive**
-   ✅ All peaks should look **clean and absorptive (Lorentzian)**
-   ❌ No peaks should be **negative or distorted**
+
+✅ All peaks should be **positive**
+✅ All peaks should look **clean and absorptive (Lorentzian)**
+❌ No peaks should be **negative or distorted**
 
 Once your peaks look clean:
 
@@ -53,14 +54,18 @@ Once your peaks look clean:
 2. Open your processing script again:
 
 ```bash
-nano fid_ft.com
+gedit fid_ft.com
 ```
 
 3. In the script, locate the section where `p0` is set.
 
    * There are **two p0 values** — edit the **upper one** (this corresponds to **¹H**).
 
-Replace the old value with your new one.
+Replace the old value with your new one and run the script again to apply the new phase.
+
+```bash
+./fid_ft.com
+```
 
 🎉 Great! Your spectrum is now correctly phased. You can already read in the file into ccpNmr analysis or other software.
 
