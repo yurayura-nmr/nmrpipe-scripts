@@ -11,15 +11,18 @@ Requires:
 * nmrglue (conda install)
 * matplotlib
 
-Zoom-up liewidth: 1.0
+Zoom-up linewidth: 1.0
 Full spectrum needs thinner linewidth
 """
 
 import nmrglue as ng
 import matplotlib.pyplot as plt
 
+global_linewidth = 0.1
+global_contourmpl = 1.20
+
 class Spectrum:
-    def __init__(self, filepath, color, contour_levels, linewidth=1.0):
+    def __init__(self, filepath, color, contour_levels, linewidth=global_linewidth):
         # Read the spectrum data
         self.dic, self.data = ng.pipe.read(filepath)
         self.color = color
@@ -57,6 +60,7 @@ def plot_multiple_spectra(spectrum_files, outfile, xlim, ylim):
 
     # Save the figure
     fig.savefig(outfile)
+    plt.close()
 
 
 def calculate_aspect_ratio(user_x_lim, user_ylim):
@@ -71,26 +75,21 @@ def calculate_aspect_ratio(user_x_lim, user_ylim):
     print(f"Aspect Ratio: {aspect_ratio}")
 
 def loadSpectra(globalScale):
+    contour_mpl = global_contourmpl
     spectra = [
-        Spectrum(filepath="1.ft2", color='black', contour_levels=[globalScale * 8.0e5 * 1.10 ** x for x in range(20)]),
-        Spectrum(filepath="2.ft2", color='blue', contour_levels=[globalScale * 7.5e5 * 1.10 ** x for x in range(20)]),
-        Spectrum(filepath="3.ft2", color='green', contour_levels=[globalScale * 4.0e5 * 1.10 ** x for x in range(20)]),
-        Spectrum(filepath="4.ft2", color='orange', contour_levels=[globalScale * 3.0e5 * 1.10 ** x for x in range(20)]),
-        Spectrum(filepath="5.ft2", color='cyan', contour_levels=[globalScale * 2.0e5 * 1.10 ** x for x in range(20)]),
-        Spectrum(filepath="6.ft2", color='purple', contour_levels=[globalScale * 2.0e5 * 1.10 ** x for x in range(20)]),
-        Spectrum(filepath="7.ft2", color='red', contour_levels=[globalScale * 2.5e5 * 1.10 ** x for x in range(20)]),
+        Spectrum(filepath="monoUb_0eq.ft2", color='black', contour_levels=[globalScale * 8.0e5 * contour_mpl ** x for x in range(20)]),
+        Spectrum(filepath="monoUb_0.25eq.ft2", color='blue', contour_levels=[globalScale * 7.5e5 * contour_mpl ** x for x in range(20)]),
+        Spectrum(filepath="monoUb_0.5eq.ft2", color='green', contour_levels=[globalScale * 5.0e5 * contour_mpl ** x for x in range(20)]),
+        Spectrum(filepath="monoUb_0.75eq.ft2", color='orange', contour_levels=[globalScale * 5.0e5 * contour_mpl ** x for x in range(20)]),
+        Spectrum(filepath="monoUb_1eq.ft2", color='cyan', contour_levels=[globalScale * 5.0e5 * contour_mpl ** x for x in range(20)]),
+        Spectrum(filepath="monoUb_2eq.ft2", color='purple', contour_levels=[globalScale * 5.0e5 * contour_mpl ** x for x in range(20)]),
+        Spectrum(filepath="monoUb_4eq.ft2", color='grey', contour_levels=[globalScale * 5.0e5 * contour_mpl ** x for x in range(20)]),
+        Spectrum(filepath="monoUb_8eq.ft2", color='red', contour_levels=[globalScale * 5.0e5 * contour_mpl ** x for x in range(20)]),
     ]
     return spectra
 
 # --- Full ---
 # Define the region of interest (xlim and ylim in ppm)
-user_xlim = (10.0, 6.2)
-user_ylim = (133.0, 101.0)
-plot_multiple_spectra(loadSpectra(1.8), "full_distal.pdf", xlim=user_xlim, ylim=user_ylim)
-
-# --- Residue G47 ---
-user_xlim = (8.35, 7.95)
-user_ylim = (104.0, 101.0)
-plot_multiple_spectra(loadSpectra(1.8), "G47_distal.pdf", xlim=user_xlim, ylim=user_ylim)
-
-# ...
+user_xlim = (10.2, 6.5)
+user_ylim = (131.5, 101.0)
+plot_multiple_spectra(loadSpectra(4.5), "full_distal.pdf", xlim=user_xlim, ylim=user_ylim)
