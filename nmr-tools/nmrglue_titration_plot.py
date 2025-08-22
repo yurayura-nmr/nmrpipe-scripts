@@ -22,9 +22,12 @@ mpl.rcParams['font.family'] = 'Times New Roman'
 
 import nmrglue as ng
 import matplotlib.pyplot as plt
+import matplotlib.ticker as ticker
 
+#global_linewidth = 1.0
 global_linewidth = 0.2
-global_contourmpl = 1.10
+#global_contourmpl = 1.10  # Most peaks
+global_contourmpl = 1.15   # For some peaks required
 
 class Spectrum:
     def __init__(self, filepath, color, contour_levels, linewidth=global_linewidth):
@@ -58,6 +61,12 @@ def plot_multiple_spectra(spectrum_files, outfile, xlim, ylim):
     # Set the user-defined axis limits
     ax.set_xlim(xlim)
     ax.set_ylim(ylim)
+
+    x = range(0, 100)
+    y = [i**0.5 for i in x]
+    # Reduce number of ticks
+    ax.xaxis.set_major_locator(ticker.MaxNLocator(nbins=3))  # at most n x-ticks
+    ax.yaxis.set_major_locator(ticker.MaxNLocator(nbins=2))  # at most n y-ticks
 
     # Label the axes
     #ax.set_xlabel("1H / ppm", size=20)     # Add in illustrator
@@ -98,3 +107,15 @@ def loadSpectra(globalScale):
 user_xlim = (10.2, 6.5)
 user_ylim = (131.5, 101.0)
 plot_multiple_spectra(loadSpectra(4.5), "full_distal.pdf", xlim=user_xlim, ylim=user_ylim)
+
+
+mpl.rcParams['font.size'] = 16            # default font size
+mpl.rcParams['axes.titlesize'] = 18       # title
+mpl.rcParams['axes.labelsize'] = 16       # x/y labels
+mpl.rcParams['xtick.labelsize'] = 14      # x tick labels
+mpl.rcParams['ytick.labelsize'] = 14      # y tick labels
+
+# --- Residue Zoom-up ---
+user_xlim = (10.25, 9.85)
+user_ylim = (124.0, 121.0)
+plot_multiple_spectra(loadSpectra(1.8), "C779.pdf", xlim=user_xlim, ylim=user_ylim)
