@@ -15,11 +15,16 @@ Zoom-up linewidth: 1.0
 Full spectrum needs thinner linewidth
 """
 
+import matplotlib as mpl
+
+# Set Times New Roman as the global font
+mpl.rcParams['font.family'] = 'Times New Roman'
+
 import nmrglue as ng
 import matplotlib.pyplot as plt
 
-global_linewidth = 0.1
-global_contourmpl = 1.20
+global_linewidth = 0.2
+global_contourmpl = 1.10
 
 class Spectrum:
     def __init__(self, filepath, color, contour_levels, linewidth=global_linewidth):
