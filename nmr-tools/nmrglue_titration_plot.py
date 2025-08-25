@@ -73,7 +73,7 @@ def plot_multiple_spectra(spectrum_files, outfile, xlim, ylim):
     #ax.set_ylabel("15N / ppm", size=20)
 
     # Save the figure
-    fig.savefig(outfile)
+    fig.savefig(outfile, transparent=True)
     plt.close()
 
 
