@@ -3,6 +3,7 @@ import sys
 import matplotlib.pyplot as plt
 import numpy as np
 from collections import defaultdict
+from matplotlib.patches import Rectangle
 
 def parse_star_file(filename):
     """
@@ -30,7 +31,6 @@ def parse_star_file(filename):
                 
             try:
                 # The format appears to have fixed columns
-                # Index the parts based on the structure
                 atom_name = parts[7]  # Atom name
                 element = parts[8]    # Element symbol
                 isotope = parts[9]    # Isotope number
@@ -73,7 +73,6 @@ def parse_star_file(filename):
 def pair_hsqc_peaks(proton_atoms, carbon_atoms):
     """
     Pair protons with their directly attached carbons for HSQC.
-    Improved pairing logic based on atom naming conventions.
     """
     hsqc_pairs = []
     
@@ -88,76 +87,37 @@ def pair_hsqc_peaks(proton_atoms, carbon_atoms):
         proton_dict = {atom[0]: atom[1] for atom in protons}
         carbon_dict = {atom[0]: atom[1] for atom in carbons}
         
-        # Define common pairings based on standard protein atom names
-        # Standard pairs: HA-CA, HB-CB, HG-CG, HD-CD, HE-CE, etc.
-        # But note: protons might have numbers (HB2, HB3) while carbons don't
-        
-        # Create a mapping from carbon atom to possible proton atoms
-        carbon_to_proton_map = {
-            'CA': ['HA', 'HA2', 'HA3'],
-            'CB': ['HB', 'HB2', 'HB3', 'HB1'],
-            'CG': ['HG', 'HG2', 'HG3', 'HG1'],
-            'CG1': ['HG11', 'HG12', 'HG13', 'HG1'],
-            'CG2': ['HG21', 'HG22', 'HG23', 'HG2'],
-            'CD': ['HD', 'HD2', 'HD3', 'HD1'],
-            'CD1': ['HD11', 'HD12', 'HD13', 'HD1'],
-            'CD2': ['HD21', 'HD22', 'HD23', 'HD2'],
-            'CE': ['HE', 'HE2', 'HE3', 'HE1'],
-            'CE1': ['HE1'],
-            'CE2': ['HE2'],
-            'CZ': ['HZ'],
-            'N': ['HN', 'H'],  # Not for HSQC but for reference
-        }
-        
-        # Special handling for different residue types
-        special_pairs = {
-            'ALA': {'CB': ['HB1', 'HB2', 'HB3']},
-            'VAL': {'CG1': ['HG11', 'HG12', 'HG13'], 'CG2': ['HG21', 'HG22', 'HG23']},
-            'ILE': {'CG1': ['HG12'], 'CG2': ['HG21', 'HG22', 'HG23'], 'CD1': ['HD11', 'HD12', 'HD13']},
-            'LEU': {'CD1': ['HD11', 'HD12', 'HD13'], 'CD2': ['HD21', 'HD22', 'HD23']},
-            'THR': {'CG2': ['HG21', 'HG22', 'HG23']},
-            'SER': {'CB': ['HB2', 'HB3']},
-            'ASN': {'CB': ['HB2', 'HB3']},
-            'GLN': {'CB': ['HB2', 'HB3']},
-            'ASP': {'CB': ['HB2', 'HB3']},
-            'GLU': {'CB': ['HB2', 'HB3']},
-            'LYS': {'CB': ['HB2', 'HB3'], 'CG': ['HG2'], 'CD': ['HD2'], 'CE': ['HE2']},
-            'ARG': {'CB': ['HB2', 'HB3'], 'CG': ['HG2'], 'CD': ['HD2']},
-            'PHE': {'CD1': ['HD1'], 'CE1': ['HE1']},
-            'TYR': {'CD1': ['HD1'], 'CE1': ['HE1']},
-            'HIS': {'CD2': ['HD2'], 'CE1': ['HE1']},
-            'TRP': {'CD1': ['HD1'], 'NE1': ['HE1']},
-            'MET': {'CE': ['HE1', 'HE2', 'HE3']},
-            'PRO': {'CB': ['HB2', 'HB3'], 'CG': ['HG2'], 'CD': ['HD2']},
-        }
-        
         # Try to pair each carbon with appropriate protons
         for carbon_name, carbon_shift in carbons:
-            # Get possible proton names for this carbon
-            possible_protons = []
+            # Skip carbonyl carbons (backbone C) as they don't have attached protons
+            if carbon_name == 'C':
+                continue
             
-            # Check standard mapping first
-            if carbon_name in carbon_to_proton_map:
-                possible_protons.extend(carbon_to_proton_map[carbon_name])
+            # Look for proton with similar base name
+            base_name = carbon_name
+            if base_name.startswith('C'):
+                base_name = base_name[1:]  # Remove C prefix
             
-            # Look for any proton that starts with the same base name
-            # (e.g., CB pairs with HB, HB2, HB3, etc.)
-            base_carbon = carbon_name[1:] if carbon_name.startswith('C') else carbon_name
-            base_proton = 'H' + base_carbon
+            # Possible proton names to check
+            possible_names = []
             
-            # Add variations
-            for proton_name, proton_shift in protons:
-                if proton_name.startswith(base_proton):
-                    possible_protons.append(proton_name)
+            # Check for exact match (e.g., CA -> HA)
+            possible_names.append('H' + base_name)
+            
+            # Check for numbered protons (e.g., CB -> HB2, HB3)
+            for proton_name in proton_dict.keys():
+                if proton_name.startswith('H' + base_name):
+                    possible_names.append(proton_name)
             
             # Remove duplicates
-            possible_protons = list(set(possible_protons))
+            possible_names = list(set(possible_names))
             
             # Try to find matches
-            for proton_name in possible_protons:
+            for proton_name in possible_names:
                 if proton_name in proton_dict:
                     hsqc_pairs.append({
                         'residue': residue,
+                        'residue_num': int(residue) if residue.isdigit() else 0,
                         'proton_atom': proton_name,
                         'carbon_atom': carbon_name,
                         'proton_shift': proton_dict[proton_name],
@@ -168,9 +128,18 @@ def pair_hsqc_peaks(proton_atoms, carbon_atoms):
     
     return hsqc_pairs
 
-def plot_hsqc_spectrum(hsqc_pairs, output_file='hsqc_simulation.png'):
+def plot_hsqc_spectrum(hsqc_pairs, label_option='all', output_file='hsqc_simulation.png', figsize=(16, 12)):
     """
-    Plot the HSQC spectrum.
+    Plot the HSQC spectrum with customizable labeling options.
+    
+    Parameters:
+    -----------
+    label_option : str
+        'none' - no labels
+        'some' - label selected peaks (every 5th, less crowded)
+        'all' - label all peaks
+        'region' - label only peaks in specific regions
+        'residues' - label only selected residues
     """
     if not hsqc_pairs:
         print("No HSQC pairs found!")
@@ -181,35 +150,32 @@ def plot_hsqc_spectrum(hsqc_pairs, output_file='hsqc_simulation.png'):
     carbon_shifts = [p['carbon_shift'] for p in hsqc_pairs]
     
     # Create figure
-    fig, ax = plt.subplots(figsize=(14, 10))
+    fig, ax = plt.subplots(figsize=figsize)
     
     # Create a colormap based on carbon shift regions
     colors = []
+    regions = []
     for c_shift in carbon_shifts:
         if c_shift < 30:
-            colors.append('blue')  # Aliphatic
+            colors.append('blue')
+            regions.append('Aliphatic')
         elif c_shift < 60:
-            colors.append('green')  # Alpha carbons
+            colors.append('green')
+            regions.append('α-Carbon')
         elif c_shift < 110:
-            colors.append('orange')  # Aromatic/other
+            colors.append('orange')
+            regions.append('Aromatic/Other')
         else:
-            colors.append('red')  # Aromatic/backbone carbonyl
+            colors.append('red')
+            regions.append('Aromatic/C=O')
     
     # Plot points with different colors
-    scatter = ax.scatter(proton_shifts, carbon_shifts, alpha=0.7, s=40, 
+    scatter = ax.scatter(proton_shifts, carbon_shifts, alpha=0.7, s=50, 
                         c=colors, edgecolors='black', linewidths=0.5)
     
-    # Add labels for selected points (every 10th point)
-    labeled_count = 0
-    for i, pair in enumerate(hsqc_pairs):
-        # Label every 10th point to avoid overcrowding
-        if i % 10 == 0 and labeled_count < 30:
-            label = f"{pair['residue']}:{pair['proton_atom']}"
-            ax.annotate(label, 
-                       (pair['proton_shift'], pair['carbon_shift']),
-                       fontsize=6, alpha=0.8,
-                       xytext=(5, 5), textcoords='offset points')
-            labeled_count += 1
+    # Label peaks based on option
+    if label_option != 'none':
+        label_all_peaks(ax, hsqc_pairs, regions, label_option)
     
     # Set axis limits (typical NMR ranges)
     ax.set_xlim(0, 10)  # 1H typically 0-10 ppm
@@ -222,7 +188,7 @@ def plot_hsqc_spectrum(hsqc_pairs, output_file='hsqc_simulation.png'):
     # Add labels and title
     ax.set_xlabel('¹H Chemical Shift (ppm)', fontsize=12)
     ax.set_ylabel('¹³C Chemical Shift (ppm)', fontsize=12)
-    ax.set_title('Simulated 1H-13C HSQC Spectrum', fontsize=14, fontweight='bold')
+    ax.set_title(f'Simulated 1H-13C HSQC Spectrum ({label_option} labels)', fontsize=14, fontweight='bold')
     
     # Add grid
     ax.grid(True, alpha=0.3, linestyle='--')
@@ -240,7 +206,8 @@ def plot_hsqc_spectrum(hsqc_pairs, output_file='hsqc_simulation.png'):
     # Add statistics
     stats_text = f'Total peaks: {len(hsqc_pairs)}\n'
     stats_text += f'1H range: {min(proton_shifts):.1f}-{max(proton_shifts):.1f} ppm\n'
-    stats_text += f'13C range: {min(carbon_shifts):.1f}-{max(carbon_shifts):.1f} ppm'
+    stats_text += f'13C range: {min(carbon_shifts):.1f}-{max(carbon_shifts):.1f} ppm\n'
+    stats_text += f'Labeling: {label_option}'
     
     ax.text(0.02, 0.02, stats_text, 
             transform=ax.transAxes, fontsize=9,
@@ -258,6 +225,172 @@ def plot_hsqc_spectrum(hsqc_pairs, output_file='hsqc_simulation.png'):
     
     return fig, ax
 
+def label_all_peaks(ax, hsqc_pairs, regions, label_option='all'):
+    """
+    Label peaks based on the selected option.
+    """
+    fontsize = 6
+    alpha = 0.7
+    
+    if label_option == 'all':
+        # Label every peak
+        for i, (pair, region) in enumerate(zip(hsqc_pairs, regions)):
+            label = f"{pair['residue_num']}:{pair['proton_atom']}"
+            ax.annotate(label, 
+                       (pair['proton_shift'], pair['carbon_shift']),
+                       fontsize=fontsize, alpha=alpha,
+                       xytext=(2, 2), textcoords='offset points',
+                       ha='left', va='bottom')
+    
+    elif label_option == 'some':
+        # Label every 5th peak and important ones
+        for i, (pair, region) in enumerate(zip(hsqc_pairs, regions)):
+            # Label backbone HA-CA peaks (important)
+            if pair['proton_atom'] == 'HA' and pair['carbon_atom'] == 'CA':
+                label = f"{pair['residue_num']}:HA"
+                ax.annotate(label, 
+                           (pair['proton_shift'], pair['carbon_shift']),
+                           fontsize=fontsize+1, alpha=0.9, color='darkgreen',
+                           xytext=(3, 3), textcoords='offset points',
+                           ha='left', va='bottom')
+            # Label every 5th peak
+            elif i % 5 == 0:
+                label = f"{pair['residue_num']}:{pair['proton_atom']}"
+                ax.annotate(label, 
+                           (pair['proton_shift'], pair['carbon_shift']),
+                           fontsize=fontsize, alpha=alpha,
+                           xytext=(2, 2), textcoords='offset points',
+                           ha='left', va='bottom')
+    
+    elif label_option == 'region':
+        # Label only peaks in specific regions
+        for i, (pair, region) in enumerate(zip(hsqc_pairs, regions)):
+            # Label only alpha-carbons and aromatic regions
+            if region in ['α-Carbon', 'Aromatic/C=O']:
+                label = f"{pair['residue_num']}:{pair['proton_atom']}"
+                ax.annotate(label, 
+                           (pair['proton_shift'], pair['carbon_shift']),
+                           fontsize=fontsize, alpha=alpha,
+                           xytext=(2, 2), textcoords='offset points',
+                           ha='left', va='bottom')
+    
+    elif label_option == 'residues':
+        # Label only specific residues (first, last, and every 10th)
+        for i, (pair, region) in enumerate(zip(hsqc_pairs, regions)):
+            res_num = pair['residue_num']
+            # Label first residue, last residue, and every 10th residue
+            if res_num == 1 or res_num == max(p['residue_num'] for p in hsqc_pairs) or res_num % 10 == 0:
+                label = f"{pair['residue_num']}:{pair['proton_atom']}"
+                ax.annotate(label, 
+                           (pair['proton_shift'], pair['carbon_shift']),
+                           fontsize=fontsize, alpha=alpha,
+                           xytext=(2, 2), textcoords='offset points',
+                           ha='left', va='bottom')
+
+def plot_hsqc_with_zoom(hsqc_pairs, label_option='all'):
+    """
+    Create a figure with both full spectrum and zoomed regions.
+    """
+    if not hsqc_pairs:
+        print("No HSQC pairs found!")
+        return
+    
+    # Create figure with subplots
+    fig = plt.figure(figsize=(18, 12))
+    
+    # Main HSQC spectrum
+    ax1 = plt.subplot2grid((2, 3), (0, 0), colspan=2, rowspan=2)
+    plot_on_axes(ax1, hsqc_pairs, label_option, is_main=True)
+    
+    # Zoom 1: Aliphatic region
+    ax2 = plt.subplot2grid((2, 3), (0, 2))
+    plot_on_axes(ax2, hsqc_pairs, label_option, 
+                 xlim=(0.5, 4.5), ylim=(10, 50), 
+                 title="Aliphatic Region (0.5-4.5 ppm 1H, 10-50 ppm 13C)")
+    
+    # Zoom 2: Aromatic region
+    ax3 = plt.subplot2grid((2, 3), (1, 2))
+    plot_on_axes(ax3, hsqc_pairs, label_option,
+                 xlim=(6.5, 9.5), ylim=(110, 140),
+                 title="Aromatic Region (6.5-9.5 ppm 1H, 110-140 ppm 13C)")
+    
+    plt.tight_layout()
+    
+    # Save figure
+    output_file = f"hsqc_with_zoom_{label_option}_labels.png"
+    plt.savefig(output_file, dpi=150, bbox_inches='tight')
+    print(f"HSQC spectrum with zoom saved as {output_file}")
+    
+    plt.show()
+    
+    return fig
+
+def plot_on_axes(ax, hsqc_pairs, label_option, is_main=False, xlim=None, ylim=None, title=None):
+    """
+    Plot HSQC data on a given axes object.
+    """
+    # Extract shifts
+    proton_shifts = [p['proton_shift'] for p in hsqc_pairs]
+    carbon_shifts = [p['carbon_shift'] for p in hsqc_pairs]
+    
+    # Create a colormap based on carbon shift regions
+    colors = []
+    regions = []
+    for c_shift in carbon_shifts:
+        if c_shift < 30:
+            colors.append('blue')
+            regions.append('Aliphatic')
+        elif c_shift < 60:
+            colors.append('green')
+            regions.append('α-Carbon')
+        elif c_shift < 110:
+            colors.append('orange')
+            regions.append('Aromatic/Other')
+        else:
+            colors.append('red')
+            regions.append('Aromatic/C=O')
+    
+    # Plot points
+    scatter = ax.scatter(proton_shifts, carbon_shifts, alpha=0.7, s=40, 
+                        c=colors, edgecolors='black', linewidths=0.5)
+    
+    # Label peaks if it's the main plot or zoomed region
+    if label_option != 'none' and not is_main:
+        # For zoomed regions, label all peaks
+        for i, (pair, region) in enumerate(zip(hsqc_pairs, regions)):
+            # Only label if in the zoom region
+            if xlim and ylim:
+                if (xlim[0] <= pair['proton_shift'] <= xlim[1] and 
+                    ylim[0] <= pair['carbon_shift'] <= ylim[1]):
+                    label = f"{pair['residue_num']}:{pair['proton_atom']}"
+                    ax.annotate(label, 
+                               (pair['proton_shift'], pair['carbon_shift']),
+                               fontsize=5, alpha=0.8,
+                               xytext=(1, 1), textcoords='offset points',
+                               ha='left', va='bottom')
+    
+    # Set axis limits
+    if xlim and ylim:
+        ax.set_xlim(xlim)
+        ax.set_ylim(ylim)
+    else:
+        ax.set_xlim(0, 10)
+        ax.set_ylim(0, 200)
+    
+    # Invert axes
+    ax.invert_xaxis()
+    ax.invert_yaxis()
+    
+    # Add labels
+    if is_main or not title:
+        ax.set_xlabel('¹H Chemical Shift (ppm)', fontsize=10)
+        ax.set_ylabel('¹³C Chemical Shift (ppm)', fontsize=10)
+        ax.set_title(f'HSQC Spectrum ({label_option} labels)', fontsize=12)
+    else:
+        ax.set_title(title, fontsize=10)
+    
+    ax.grid(True, alpha=0.3, linestyle='--')
+
 def generate_hsqc_table(hsqc_pairs, output_file='hsqc_peaks.txt'):
     """
     Generate a table of HSQC peaks.
@@ -268,8 +401,8 @@ def generate_hsqc_table(hsqc_pairs, output_file='hsqc_peaks.txt'):
         f.write(f"{'Residue':<12} {'Proton':<10} {'Carbon':<10} {'1H (ppm)':<12} {'13C (ppm)':<12} {'Region':<15}\n")
         f.write("-" * 100 + "\n")
         
-        # Sort by carbon shift
-        sorted_pairs = sorted(hsqc_pairs, key=lambda x: x['carbon_shift'])
+        # Sort by residue number
+        sorted_pairs = sorted(hsqc_pairs, key=lambda x: x['residue_num'])
         
         for pair in sorted_pairs:
             # Determine region
@@ -312,40 +445,17 @@ def print_summary(hsqc_pairs, proton_atoms, carbon_atoms):
     print(f"HSQC cross-peaks identified: {len(hsqc_pairs)}")
     
     if hsqc_pairs:
-        # Group by residue
-        residues_with_pairs = set(p['residue'] for p in hsqc_pairs)
-        print(f"Residues with HSQC pairs: {len(residues_with_pairs)}")
-        
-        # Show example pairs by region
-        print("\nExample HSQC peaks by region:")
+        # Group by region
         aliphatic = [p for p in hsqc_pairs if p['carbon_shift'] < 30]
         alpha_carbon = [p for p in hsqc_pairs if 30 <= p['carbon_shift'] < 60]
         other = [p for p in hsqc_pairs if 60 <= p['carbon_shift'] < 110]
         aromatic = [p for p in hsqc_pairs if p['carbon_shift'] >= 110]
         
-        print(f"  Aliphatic (<30 ppm): {len(aliphatic)} peaks")
-        if aliphatic:
-            for p in aliphatic[:3]:
-                print(f"    {p['residue']} {p['proton_atom']}-{p['carbon_atom']}: "
-                      f"1H={p['proton_shift']:.2f}, 13C={p['carbon_shift']:.2f}")
-        
-        print(f"  α-Carbons (30-60 ppm): {len(alpha_carbon)} peaks")
-        if alpha_carbon:
-            for p in alpha_carbon[:3]:
-                print(f"    {p['residue']} {p['proton_atom']}-{p['carbon_atom']}: "
-                      f"1H={p['proton_shift']:.2f}, 13C={p['carbon_shift']:.2f}")
-        
-        print(f"  Other (60-110 ppm): {len(other)} peaks")
-        if other:
-            for p in other[:3]:
-                print(f"    {p['residue']} {p['proton_atom']}-{p['carbon_atom']}: "
-                      f"1H={p['proton_shift']:.2f}, 13C={p['carbon_shift']:.2f}")
-        
-        print(f"  Aromatic/Carbonyl (≥110 ppm): {len(aromatic)} peaks")
-        if aromatic:
-            for p in aromatic[:3]:
-                print(f"    {p['residue']} {p['proton_atom']}-{p['carbon_atom']}: "
-                      f"1H={p['proton_shift']:.2f}, 13C={p['carbon_shift']:.2f}")
+        print(f"\nPeak distribution by region:")
+        print(f"  Aliphatic (<30 ppm): {len(aliphatic)} peaks ({len(aliphatic)/len(hsqc_pairs)*100:.1f}%)")
+        print(f"  α-Carbons (30-60 ppm): {len(alpha_carbon)} peaks ({len(alpha_carbon)/len(hsqc_pairs)*100:.1f}%)")
+        print(f"  Other (60-110 ppm): {len(other)} peaks ({len(other)/len(hsqc_pairs)*100:.1f}%)")
+        print(f"  Aromatic/Carbonyl (≥110 ppm): {len(aromatic)} peaks ({len(aromatic)/len(hsqc_pairs)*100:.1f}%)")
 
 def main():
     # Get input filename
@@ -369,10 +479,6 @@ def main():
         
         if not hsqc_pairs:
             print("No HSQC pairs could be identified.")
-            print("This could be due to:")
-            print("  1. Atom naming mismatch between protons and carbons")
-            print("  2. Different residue numbering in proton and carbon lists")
-            print("  3. Missing carbon assignments for protonated positions")
             return
         
         print(f"Identified {len(hsqc_pairs)} potential HSQC cross-peaks")
@@ -383,21 +489,59 @@ def main():
         # Generate output files
         generate_hsqc_table(hsqc_pairs)
         
-        # Create and display the simulated spectrum
-        plot_hsqc_spectrum(hsqc_pairs)
+        # Ask for labeling option
+        print("\nLabeling options:")
+        print("  1. none - No labels")
+        print("  2. some - Label selected peaks (less crowded)")
+        print("  3. all - Label ALL peaks")
+        print("  4. region - Label only α-carbons and aromatics")
+        print("  5. residues - Label only specific residues")
         
-        # Ask if user wants to see raw data
-        response = input("\nWould you like to see raw atom lists for a specific residue? (y/n): ")
-        if response.lower() == 'y':
-            residue_num = input("Enter residue number: ")
-            if residue_num in proton_atoms:
-                print(f"\nProtons in residue {residue_num}:")
-                for atom, shift in proton_atoms[residue_num]:
-                    print(f"  {atom}: {shift:.3f} ppm")
-            if residue_num in carbon_atoms:
-                print(f"\nCarbons in residue {residue_num}:")
-                for atom, shift in carbon_atoms[residue_num]:
-                    print(f"  {atom}: {shift:.3f} ppm")
+        label_choice = input("\nSelect labeling option (1-5): ").strip()
+        
+        label_options = {
+            '1': 'none',
+            '2': 'some', 
+            '3': 'all',
+            '4': 'region',
+            '5': 'residues'
+        }
+        
+        label_option = label_options.get(label_choice, 'some')
+        
+        # Ask if user wants zoomed regions
+        zoom_choice = input("\nCreate additional zoomed regions? (y/n): ").strip().lower()
+        
+        if zoom_choice == 'y':
+            # Create figure with zoomed regions
+            plot_hsqc_with_zoom(hsqc_pairs, label_option)
+        else:
+            # Create standard plot
+            plot_hsqc_spectrum(hsqc_pairs, label_option, figsize=(18, 12))
+        
+        # Show example peaks
+        print("\nExample peaks from different regions:")
+        print("-" * 70)
+        print(f"{'Residue':<10} {'Proton-Carbon':<15} {'1H (ppm)':<10} {'13C (ppm)':<10} {'Region':<15}")
+        print("-" * 70)
+        
+        # Show examples from each region
+        for pair in hsqc_pairs[:10]:  # First 10
+            c_shift = pair['carbon_shift']
+            if c_shift < 30:
+                region = "Aliphatic"
+            elif c_shift < 60:
+                region = "α-Carbon"
+            elif c_shift < 110:
+                region = "Aromatic/Other"
+            else:
+                region = "Aromatic/C=O"
+            
+            print(f"{pair['residue']:<10} "
+                  f"{pair['proton_atom']}-{pair['carbon_atom']:<15} "
+                  f"{pair['proton_shift']:<10.2f} "
+                  f"{pair['carbon_shift']:<10.2f} "
+                  f"{region:<15}")
             
     except FileNotFoundError:
         print(f"Error: File '{filename}' not found!")
