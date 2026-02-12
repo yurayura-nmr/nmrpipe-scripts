@@ -11,9 +11,6 @@ Graduate School of Medicine
 https://github.com/yurayura-nmr/
 For Bruker TopSpin
 
-Last change: 
-* 2023/06/07 - added support for experiments with non-zero SR (e.g. hbha(co)nh).
-
     1. Record 1D spectrum of DSS in the same buffer (external)
        or the actual protein sample (internal) standard
        using 1D pulse with water suppression (e.g., p3919fpgp).
@@ -30,143 +27,187 @@ Last change:
     Note: This script assumes the 
           15N channel is on O3 and that the 
           13C channel is on O2.
+
+Optimized version with automatic SR(F1) handling (e.g., for HCCH-TOCSY).
+
+Supports:
+    SR(F1) = fraction * SWH(F1)
+
+For Bruker TopSpin datasets.
 """
 
-import os.path
+import os
 import sys
+from decimal import Decimal, getcontext
 
-from decimal import *
 
-"""
-Some experiments have a shift. E.g. hbha(co)nh requires a custom shift ("SR") in the F1 dimension equal to 1/4 SW_h(F1)
-So, for a SW_h of 4901.961, we would have to shift the spectrum by 1/4 SW_h = 1225.32
+# -----------------------------
+# ---- USER SETTINGS ----------
+# -----------------------------
 
-Specify this here, if applicable.
-"""
-custom_shift = False
-custom_shift_Hz = Decimal(1225.32)
-
+apply_SR_F1 = False                    # Enable SR correction
+SR_fraction = Decimal(1) / Decimal(4)  # SR(F1) = 1/4 SWH(F1)
 
 
 def main():
-    fileCheck() # Check if we are in the right folder and get dimensionality
-    
+    dimensions = fileCheck()
     SFO1, O1, SFO2, O2, SFO3, O3, DSS_ppm = getPars()
-    calc(SFO1, O1, SFO2, O2, SFO3, O3, DSS_ppm)
+    calc(dimensions, SFO1, O1, SFO2, O2, SFO3, O3, DSS_ppm)
+
 
 def fileCheck():
-    # Dimensionality and file check
     dimensions = 0
 
-    if os.path.exists("./acqu") is True:
+    if os.path.exists("./acqus"):
         dimensions += 1
     else:
-        print ("NMR file [./acqu] not found!")
-        print ("Please make sure you are in the correct directory.")
+        print("acqus not found. Run inside Bruker experiment folder.")
         sys.exit()
 
-    if os.path.exists("./acqu2") is True:
+    if os.path.exists("./acqu2s"):
         dimensions += 1
 
-    if os.path.exists("./acqu3") is True:
+    if os.path.exists("./acqu3s"):
         dimensions += 1
 
-    print (str(dimensions) + "-dimensional experiment detected!")
+    print(f"{dimensions}D experiment detected.")
+    return dimensions
+
 
 def getPars():
-    # Extract parameters from the Bruker files
 
-    acqu = open('acqus')
+    SFO1 = O1 = SFO2 = O2 = SFO3 = O3 = None
 
-    for line in acqu:
-        if "SFO1" in line:
-            a = line.split()
-            SFO1 = float(a[1])
-            print("Found SFO1 in acqus", SFO1)
-        elif "$O1" in line:
-            b = line.split()
-            O1 = float(b[1])
-            print("Found O1 in acqus", O1)
-        elif "SFO3" in line:
-            c = line.split()
-            SFO3 = float(c[1])
-            print("Found SFO3 in acqus", SFO3)
-        elif "$O3" in line:
-            d = line.split()
-            O3 = float(d[1])
-            print("Found O3 in acqus", O3)
-        elif "SFO2" in line:
-            e = line.split()
-            SFO2 = float(e[1])
-            print("Found SFO2 in acqus", SFO2)
-        elif "$O2" in line:
-            f = line.split()
-            O2 = float(f[1])
-            print("Found O2 in acqus", O2)
+    with open("acqus") as f:
+        for line in f:
+            if line.startswith("##$SFO1"):
+                SFO1 = float(line.split("=")[1])
+            elif line.startswith("##$O1"):
+                O1 = float(line.split("=")[1])
+            elif line.startswith("##$SFO2"):
+                SFO2 = float(line.split("=")[1])
+            elif line.startswith("##$O2"):
+                O2 = float(line.split("=")[1])
+            elif line.startswith("##$SFO3"):
+                SFO3 = float(line.split("=")[1])
+            elif line.startswith("##$O3"):
+                O3 = float(line.split("=")[1])
 
+    if None in (SFO1, O1):
+        print("Critical parameters missing in acqus.")
+        sys.exit()
+
+    print("Found parameters:")
+    print("SFO1:", SFO1, "MHz")
+    print("O1:", O1, "Hz")
+    print("SFO2:", SFO2)
+    print("O2:", O2)
+    print("SFO3:", SFO3)
+    print("O3:", O3)
     print()
-    DSS_ppm = input('Please enter the measured chemical shift of DSS in [ppm] ....  ')
+
+    DSS_ppm = input("Enter measured DSS chemical shift (ppm): ")
 
     return SFO1, O1, SFO2, O2, SFO3, O3, DSS_ppm
 
-def calc(SFO1, O1, SFO2, O2, SFO3, O3, DSS_ppm):
-    getcontext().prec = 12
 
-    # Using decimal for precision handling
+def get_SWH_F1(dimensions):
+    if dimensions == 3:
+        filename = "acqu3s"
+    elif dimensions == 2:
+        filename = "acqu2s"
+    else:
+        print("SR only meaningful for >=2D experiments.")
+        return None
+
+    if not os.path.exists(filename):
+        print(f"{filename} not found. Cannot apply SR.")
+        sys.exit()
+
+    with open(filename) as f:
+        for line in f:
+            if line.startswith("##$SW_h"):
+                SW_h = Decimal(line.split("=")[1])
+                print(f"Found SW_h (F1) in {filename}: {SW_h} Hz")
+                return SW_h
+
+    print("SW_h not found in", filename)
+    sys.exit()
+
+
+def calc(dimensions, SFO1, O1, SFO2, O2, SFO3, O3, DSS_ppm):
+
+    getcontext().prec = 15
+
     DSS_ppm = Decimal(DSS_ppm)
-    DSS_Hz  = DSS_ppm * Decimal(1E-6)
+    DSS_fraction = DSS_ppm * Decimal(1E-6)
 
     hydrogen_sf = Decimal(SFO1)
-    carbon_sf   = Decimal(SFO2)
-    nitrogen_sf = Decimal(SFO3)
     hydrogen_o1 = Decimal(O1)
 
-    conversion_factor_hydrogen = Decimal(1)
-    conversion_factor_carbon   = Decimal(0.251449530)
-    conversion_factor_nitrogen = Decimal(0.101329118)
-    conversion_factor_fluorine = Decimal(0.94094008)
+    carbon_sf = Decimal(SFO2) if SFO2 else None
+    nitrogen_sf = Decimal(SFO3) if SFO3 else None
 
-    # Calculate: Carrier frequency (spectral center, proton)
-    hydrogen_sf_Hz = hydrogen_sf * Decimal(1E6)             # Convert to Hz since O1 is read in as Hz but SFO1 is read in as MHz
-    carrier = (hydrogen_sf_Hz - hydrogen_o1) / Decimal(1E6) # back to [MHz]
+    # Conversion factors relative to 1H
+    conv_H = Decimal("1.0")
+    conv_C = Decimal("0.251449530")
+    conv_N = Decimal("0.101329118")
 
-    # Calculate: How much is the measured DSS drifted from 0 ppm currently (proton)?
-    carrier_Hz = carrier * Decimal(1E6)
-    DSS_currentDrift_Hz = carrier_Hz * DSS_Hz               # in [Hz]
-    DSS_shift_MHz = carrier + (DSS_currentDrift_Hz * Decimal(1E-6)) # in [MHz]
+    # --- Proton carrier frequency ---
+    hydrogen_sf_Hz = hydrogen_sf * Decimal(1E6)
+    carrier_MHz = (hydrogen_sf_Hz - hydrogen_o1) / Decimal(1E6)
 
-    # Proton, Carbon, Nitrogen - what are their true zero frequencies (to make the DSS signal come to 0.000 ppm in all dimensions)?
-    zero_frequency_hydrogen = DSS_shift_MHz * conversion_factor_hydrogen
-    zero_frequency_carbon   = DSS_shift_MHz * conversion_factor_carbon
-    zero_frequency_nitrogen = DSS_shift_MHz * conversion_factor_nitrogen
-    zero_frequency_fluorine = DSS_shift_MHz * conversion_factor_fluorine
+    carrier_Hz = carrier_MHz * Decimal(1E6)
 
-    center_hydrogen = ((hydrogen_sf - zero_frequency_hydrogen) / zero_frequency_hydrogen) * Decimal(1E6) # in ppm. SR = 0
-    center_carbon   = ((carbon_sf   - zero_frequency_carbon)   / zero_frequency_carbon)   * Decimal(1E6) # in ppm
-    center_nitrogen = ((nitrogen_sf - zero_frequency_nitrogen) / zero_frequency_nitrogen) * Decimal(1E6) # in ppm
-    
-    # Done!
-    print()
-    print("Parameters")
-    print()
-    print("SFO1 [MHz] ...................... ", SFO1)
-    print("O1 [Hz] ......................... ", O1)
-    print("Carrier [MHz] ................... ", carrier)
-    print("DSS drift from 0.00 ppm [Hz] .... ", DSS_currentDrift_Hz)
-    print("Frequency of DSS at 0 ppm [MHz] . ", DSS_shift_MHz)
+    # DSS drift
+    DSS_drift_Hz = carrier_Hz * DSS_fraction
+    DSS_zero_MHz = carrier_MHz + (DSS_drift_Hz * Decimal(1E-6))
 
-    print()
-    print()
-    print("DSS-referenced parameters")
-    print()
-    print(" 1H new center [ppm] ............ ", center_hydrogen)
-    print("15N new center [ppm] ............ ", center_nitrogen)
-    print("13C new center [ppm] ............ ", center_carbon)
+    # True zero frequencies
+    zero_H = DSS_zero_MHz * conv_H
+    zero_C = DSS_zero_MHz * conv_C if carbon_sf else None
+    zero_N = DSS_zero_MHz * conv_N if nitrogen_sf else None
+
+    # New spectral centers
+    center_H = ((hydrogen_sf - zero_H) / zero_H) * Decimal(1E6)
+    center_C = ((carbon_sf - zero_C) / zero_C) * Decimal(1E6) if zero_C else None
+    center_N = ((nitrogen_sf - zero_N) / zero_N) * Decimal(1E6) if zero_N else None
+
+    # -----------------------------
+    # ---- PRINT RESULTS ----------
+    # -----------------------------
+
+    print("\n--- DSS Referencing ---\n")
+    print("Carrier (1H) [MHz]:", carrier_MHz)
+    print("DSS drift [Hz]:", DSS_drift_Hz)
+    print("DSS zero frequency [MHz]:", DSS_zero_MHz)
     print()
 
-    if custom_shift is True:
-        custom_shift_ppm = (custom_shift_Hz / DSS_shift_MHz) 
-        print(" SR [ppm] ....................... ", custom_shift_ppm)
-        print(" 1H new center [ppm] after SR ... ", center_hydrogen - custom_shift_ppm)
+    print("New centers:")
+    print("1H  [ppm]:", center_H)
+    if center_C:
+        print("13C [ppm]:", center_C)
+    if center_N:
+        print("15N [ppm]:", center_N)
 
-main()
+    # -----------------------------
+    # ---- SR CORRECTION ----------
+    # -----------------------------
+
+    if apply_SR_F1 and dimensions >= 2:
+
+        SW_h_F1 = get_SWH_F1(dimensions)
+        SR_Hz = SR_fraction * SW_h_F1
+        SR_ppm = SR_Hz / DSS_zero_MHz
+
+        print("\n--- SR(F1) Correction ---\n")
+        print("SR fraction:", SR_fraction)
+        print("SR (Hz):", SR_Hz)
+        print("SR (ppm):", SR_ppm)
+        print()
+        print("1H center after SR [ppm]:", center_H - SR_ppm)
+
+
+if __name__ == "__main__":
+    main()
+
