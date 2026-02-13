@@ -23,7 +23,7 @@ xyz2pipe -in fid/${NAME}%03d.ft3 -x		          \
 xyz2pipe -in fid/${NAME}%03d.ft3 -z		          \
 | nmrPipe -fn ZF -auto				                  \
 | nmrPipe -fn FT -verb				                  \
-| nmrPipe -fn PS -p0 -90 -p1 0 -di   		        \
+| nmrPipe -fn PS -p0 0 -p1 0 -di   		          \
 | nmrPipe -fn POLY -auto -ord 0                 \
 | pipe2xyz -out fid/${NAME}%03d.ft3 -z -inPlace
 
