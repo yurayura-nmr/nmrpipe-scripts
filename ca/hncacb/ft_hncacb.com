@@ -1,6 +1,7 @@
 #!/bin/tcsh
 
 # Make sure 13C projection has the alanine Cbetas at the top and the positive/negative overlaps at the bottom.
+# TROSY version -p0 0 in -z
 
 setenv NAME hncacb
 
