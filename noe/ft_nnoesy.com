@@ -57,4 +57,6 @@ xyz2pipe -in fid/${NAME}%03d.ft3 -x             \
 xyz2pipe -in fid/${NAME}%03d.ft3 -x             \
 | pipe2xyz -nv -out ./${NAME}.nv
 
+xyz2pipe -in fid/${NAME}%03d.ft3 -x > ${NAME}.pipe
+
 proj3D.tcl -in fid/${NAME}%03d.ft3
