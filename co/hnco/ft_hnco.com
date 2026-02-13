@@ -1,5 +1,7 @@
 #!/bin/tcsh
 
+# TROSY version -p0 0 in -z
+
 setenv NAME hnco
 
 rm -f fid/*.ft3
