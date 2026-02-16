@@ -1,26 +1,92 @@
-#!/usr/bin/python3
+#!/usr/bin/env python3
 
 """
+ccpn2flya.py
 
-Erik Walinda
-Kyoto University
-Graduate School of Medicine
+Author: Erik Walinda
+Affiliation: Kyoto University, Graduate School of Medicine
+Originally written in 2016 (Python 2)
+Updated: 2023 (Python 3 migration)
 
-CCPN to FLYA converter
-2016/04/29 (First version: python2)
-2023/06/05 (Last update : python3)
+Description
+-----------
+Utility script to convert CCPN-generated XEASY peak lists into FLYA-compatible
+input peak lists for automated NMR assignment.
 
-1) Use Format Converter in CCPN to write XEASY peak lists for each peak-picked spectrum.
-   It is not necessary to manually select the "correct order" of axes in FormatConverter, as this is handled by the script.
-2) Use this script to convert them to FLYA input peak lists.
-   For example:
-   ./ccpn2flya.py -hnca HNCA.peaks
+Peak lists must first be exported from CCPN using the Format Converter
+(XEASY format). Axis order selection inside CCPN does not need to match
+FLYA expectations; axis remapping is handled internally by this script.
 
-# Groups:
-#	NHSQC
-#	NOESY, HCcoNH, HBHAcoNH
-#	CHSQC (ali), CHSQC (aro)
+Usage Example
+-------------
+    ./ccpn2flya.py -hnca HNCA.peaks
 
+Supported Experiment Types and Observed Correlations
+----------------------------------------------------
+
+Backbone Amide Reference
+------------------------
+- NHSQC ([1H,15N]-HSQC)
+  Visible peaks:
+    HN(i) – N(i)
+
+Triple-Resonance Backbone Experiments
+-------------------------------------
+- HNCO
+  HN(i) – N(i) – C'(i-1)
+
+- HNcaCO
+  HN(i) – N(i) – C'(i)
+  (and the HNCO peak)
+
+- HNcoCA
+  HN(i) – N(i) – CA(i-1)
+
+- HNCA
+  HN(i) – N(i) – CA(i)
+  (and the HNcoCA peak)
+
+- CBCAcoNH
+  HN(i) – N(i) – CA(i-1), CB(i-1)
+
+- HNCACB / CBCANH
+  HN(i) – N(i) – CA(i), CB(i)
+  (and the CBCAcoNH peaks)
+
+
+Side-Chain to Amide Correlation Experiments
+--------------------------------------------
+- HCcoNH
+  HN(i) – N(i) – HC(i-1)
+
+- HBHAcoNH
+  HN(i) – N(i) – HA(i-1), HB(i-1)
+
+- CcoNH
+  HN(i) – N(i) – C(i-1) side-chain carbons
+
+NOESY Experiments
+-----------------
+- 15N-edited NOESY (NNOESY)
+  HN(i) – N(i) – NOE protons
+
+- 13C-edited NOESY (aliphatic)
+  HC(aliphatic) – C(aliphatic) – NOE protons
+
+- 13C-edited NOESY (aromatic)
+  HC(aromatic) – C(aromatic) – NOE protons
+
+Side-Chain HSQC
+---------------
+- CHSQC ([1H,13C]-HSQC)
+  Direct one-bond correlations:
+    HC – C (aliphatic or aromatic)
+
+Notes
+-----
+- The script assumes peak lists are peak-picked and exported in XEASY format.
+- Axis permutations are automatically corrected.
+- Output files are formatted for direct use with FLYA.
 """
 
 import numpy
