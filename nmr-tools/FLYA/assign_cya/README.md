@@ -1,5 +1,4 @@
-ASSIGN.cya
-----------
+#### ASSIGN.cya
 
 To select only a subset of aminoacids for assignment::
 
