@@ -1,0 +1,23 @@
+randomseed  := 3771
+
+peaks:=N15HSQC,HNCO,HNcaCO,CBCAcoNH,CBCANH
+
+nproc:=19
+
+assigncs_accH:=0.01
+assigncs_accC:=0.1
+assigncs_accN=assigncs_accC
+
+tolerance:=$assigncs_accH,$assigncs_accH,$assigncs_accC
+
+shiftassign_population:=200
+shiftassign_iterations:=20000
+shiftassign_fix:=fix.prot
+
+analyzeassign_group := BB: N H CA CB C
+
+command select_atoms
+  atom select "N H CA CB C"
+end
+
+flya runs=10 assignpeaks=$peaks plot=flya.pdf structure=otub1.pdb shiftreference=fix.prot
