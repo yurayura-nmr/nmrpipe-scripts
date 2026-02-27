@@ -1,3 +1,8 @@
+# IMPORTANT: MARS requires the chemical shift table header to contain ONLY the shift type names
+# (e.g., "N", "HN", "CA", ...). Do NOT include a column label for the pseudoresidue column.
+# The first column (pseudoresidue names) has no header. Including "Name" in the header will
+# cause MARS to misread the file and overwrite it with an empty one.
+
 import tkinter as tk
 from tkinter import ttk, filedialog, messagebox
 import os
