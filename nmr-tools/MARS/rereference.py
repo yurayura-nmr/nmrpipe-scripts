@@ -1,119 +1,92 @@
 #!/usr/bin/env python3
 """
-Apply nucleus-specific referencing shifts to a MARS chemical shift table.
-Usage: python apply_reference_shift.py input.tab output.tab --offsets N=0.5 HN=0.02 CA=-0.3 ...
+Apply hardcoded referencing offsets to a MARS chemical shift file.
+Offsets are defined for carbon, proton, and nitrogen based on provided old/new values.
+Compatible with Python 3.2+.
 """
 
-import argparse
-import re
 import sys
+import re
 
-def main():
-    parser = argparse.ArgumentParser(description='Apply referencing shifts to MARS chemical shift file.')
-    parser.add_argument('input', help='Input .tab file')
-    parser.add_argument('output', help='Output .tab file')
-    parser.add_argument('--offsets', nargs='+', required=True,
-                        help='Offsets in format NUCLEUS=value e.g. N=0.5 HN=0.02 CA=-0.3')
-    args = parser.parse_args()
+# Hardcoded offsets (new_referenced - old_before_referencing)
+CARBON_DELTA = 24.9789 - 25.1930     # -0.2141 (measured by e.g., referencing a HNCACB spectrum with respect to DSS)
+PROTON_DELTA = 7.1322 - 7.2792       # -0.1470 (measured by e.g., referencing a 1H/15N HSQC spectrum with respect to DSS)
+NITROGEN_DELTA = 124.2821 - 124.42   # -0.1379 (measured by e.g., referencing a 1H/15N HSQC spectrum with respect to DSS)
 
-    # Parse offsets into a dictionary
-    offset_dict = {}
-    for item in args.offsets:
-        if '=' not in item:
-            sys.stderr.write(f"Warning: skipping invalid offset '{item}'. Use NUCLEUS=value.\n")
-            continue
-        nucleus, val = item.split('=', 1)
-        try:
-            offset_dict[nucleus.strip()] = float(val)
-        except ValueError:
-            sys.stderr.write(f"Warning: invalid number for {nucleus}: {val}\n")
+def apply_offset(value, nucleus):
+    """Apply appropriate offset to value string, return modified string."""
+    try:
+        val = float(value)
+    except ValueError:
+        return value  # keep as is (e.g., '-')
+    if nucleus.startswith('C'):  # carbon column (CA, CB, CO, ...)
+        new_val = val + CARBON_DELTA
+    elif nucleus.startswith('H'):  # proton column (HN, HA, H, ...)
+        new_val = val + PROTON_DELTA
+    elif nucleus == 'N':
+        new_val = val + NITROGEN_DELTA
+    else:
+        new_val = val  # no offset for other types
+    # Format with 4 decimal places (adjust if needed) – compatible with older Python
+    formatted = "{:.4f}".format(new_val).rstrip('0').rstrip('.')
+    return formatted
 
-    if not offset_dict:
-        sys.stderr.write("No valid offsets provided. Exiting.\n")
-        sys.exit(1)
-
-    with open(args.input, 'r') as fin, open(args.output, 'w') as fout:
+def process_file(input_file, output_file):
+    with open(input_file, 'r') as fin, open(output_file, 'w') as fout:
         lines = fin.readlines()
         if not lines:
             return
 
-        # Find the first non‑comment line (the header)
+        # Find header line (first non‑comment, non‑empty)
         header_idx = 0
         for i, line in enumerate(lines):
-            if line.strip() and not line.startswith('#'):
+            stripped = line.strip()
+            if stripped and not stripped.startswith('#'):
                 header_idx = i
                 break
         else:
-            sys.stderr.write("No header line found.\n")
-            sys.exit(1)
+            print("No header line found. Exiting.")
+            return
 
-        # Process header: split into column names
-        header_line = lines[header_idx]
-        # Use whitespace split, but preserve the exact whitespace for output?
-        # We'll reconstruct with tabs for simplicity, but better to keep original format.
-        # Let's split on whitespace and store columns.
-        cols = re.split(r'\s+', header_line.strip())
-        # The first column is the pseudoresidue column (no header), but in the file it's present.
-        # Actually, in MARS files, the first column has no header name (it's the PR ID column).
-        # So cols[0] is the first shift type? Wait, the header line lists only the shift types,
-        # and the first column (PR ID) has no header. So when we split, cols[0] is the first shift type.
-        # Example: "N HN CA CB CO CO-1 CA-1 CB-1"
-        # That means the data lines have: <PR_name> <N> <HN> ...
-        # So we need to map each shift column to its nucleus name.
-        # We'll create a list of column names as they appear (without the PR column).
-        col_names = cols  # these are the shift types
-
-        # Write the header unchanged (we keep it exactly as is)
-        # But we need to ensure we write it back without modifying.
+        # Extract column names from header
+        header_line = lines[header_idx].strip()
+        col_names = re.split(r'\s+', header_line)   # list of shift types
+        # Write header unchanged
         fout.write(lines[header_idx])
 
-        # Now process data lines after header
+        # Process remaining lines
         for line in lines[header_idx+1:]:
             stripped = line.strip()
             if not stripped or stripped.startswith('#'):
-                # comment or empty line: write unchanged
                 fout.write(line)
                 continue
 
-            # Split data line into fields (preserving whitespace? easier to split and rejoin with tabs)
+            # Split data line into fields
             fields = re.split(r'\s+', stripped)
             if len(fields) < len(col_names) + 1:
-                # Not enough fields: maybe the line is malformed; copy as is
-                sys.stderr.write(f"Warning: line has fewer fields than header: {line}")
+                # Malformed line; write as is (should not happen)
+                print("Warning: Skipping line with insufficient fields: {}".format(line.strip()), file=sys.stderr)
                 fout.write(line)
                 continue
 
             # First field is pseudoresidue name
-            pr_name = fields[0]
-            # Following fields are the shifts in the order of col_names
-            new_fields = [pr_name]
-            for j, shift_val in enumerate(fields[1:]):
-                if j >= len(col_names):
+            new_fields = [fields[0]]
+            # Apply offsets to shift columns
+            for i, val in enumerate(fields[1:]):
+                if i >= len(col_names):
                     break
-                nucleus = col_names[j]
-                if shift_val != '-' and shift_val.strip() != '':
-                    try:
-                        old = float(shift_val)
-                        # Apply offset if defined for this nucleus
-                        if nucleus in offset_dict:
-                            new_val = old + offset_dict[nucleus]
-                            # Format with appropriate precision (e.g., keep same decimal places?)
-                            # Simple: convert back to string with 3-6 decimal places.
-                            # We'll just use repr or format with 6 decimals.
-                            new_fields.append(f"{new_val:.6f}".rstrip('0').rstrip('.'))
-                        else:
-                            new_fields.append(shift_val)  # unchanged
-                    except ValueError:
-                        # Not a number, keep as is (shouldn't happen)
-                        new_fields.append(shift_val)
-                else:
-                    new_fields.append(shift_val)
+                nucleus = col_names[i]
+                new_fields.append(apply_offset(val, nucleus))
 
-            # Reconstruct line with original whitespace? We'll join with a tab.
-            # To preserve original spacing, we'd need to use regex replacement, but simpler:
+            # Reconstruct line with tabs
             fout.write("\t".join(new_fields) + "\n")
 
-    print(f"Applied offsets {offset_dict} to {args.input}. Output written to {args.output}")
+    print("Processed {} -> {}".format(input_file, output_file))
+    print("Applied offsets: Carbon {:.4f}, Proton {:.4f}, Nitrogen {:.4f}".format(
+        CARBON_DELTA, PROTON_DELTA, NITROGEN_DELTA))
 
-if __name__ == '__main__':
-    main()
+if __name__ == "__main__":
+    if len(sys.argv) != 3:
+        print("Usage: python rereference.py input.tab output.tab")
+        sys.exit(1)
+    process_file(sys.argv[1], sys.argv[2])
