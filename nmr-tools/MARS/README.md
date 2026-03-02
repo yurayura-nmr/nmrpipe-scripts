@@ -64,8 +64,8 @@ docker commit <container-id> mars12-fixed
 ```
 Then later run with:
 ```bash
-docker run -it --rm -v /path/to/data:/data mars12-fixed \
-  bash -c "export MARSHOME=/opt/mars-1.2_linux/bin && cd /data && /opt/mars-1.2_linux/bin/runmars mars.inp"
+docker ps
+docker exec -it 709a2b1e1f65 bash
 ```
 
 
