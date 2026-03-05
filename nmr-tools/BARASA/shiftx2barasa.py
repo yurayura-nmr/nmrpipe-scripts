@@ -1,30 +1,31 @@
 #!/usr/bin/env python3
 """
-Convert ShiftX output to BARASA predicted chemical shift file format.
+Convert SHIFTX2 output to BARASA predicted chemical shift file format.
 
 Usage:
     shiftx2barasa.py input.txt output.txt [CA_err CB_err CO_err N_err H_err]
 
-Default errors (from ShiftX website):
-    CA_err = 0.98, CB_err = 1.10, CO_err = 1.16, N_err = 2.43, H_err = 0.49
+Default errors (from SHIFTX2, 2011):
+    CA_err = 0.4412, CB_err = 0.5163, CO_err = 0.5330,
+    N_err  = 1.1169, H_err  = 0.1711
 """
 
 import argparse
 import sys
 import os
 
-# Default errors from ShiftX (ppm)
+# Default errors from SHIFTX2 (RMS errors reported in the paper)
 DEFAULT_ERRORS = {
-    'CA': 0.98,
-    'CB': 1.10,
-    'CO': 1.16,
-    'N': 2.43,
-    'H': 0.49
+    'CA': 0.4412,
+    'CB': 0.5163,
+    'CO': 0.5330,
+    'N': 1.1169,
+    'H': 0.1711
 }
 
 def parse_shiftx(input_file):
     """
-    Parse ShiftX output file.
+    Parse SHIFTX2 output file.
     Returns list of tuples: (num, res, ca, cb, co, n, h)
     where missing values are represented as None.
     """
@@ -118,9 +119,9 @@ def write_barasa_pred(output_file, data, errors):
 
 def main():
     parser = argparse.ArgumentParser(
-        description="Convert ShiftX output to BARASA predicted shifts."
+        description="Convert SHIFTX2 output to BARASA predicted shifts."
     )
-    parser.add_argument("input", help="Input ShiftX file")
+    parser.add_argument("input", help="Input SHIFTX2 file")
     parser.add_argument("output", help="Output BARASA file")
     parser.add_argument("errors", nargs='*', type=float,
                         metavar="CA_err CB_err CO_err N_err H_err",
@@ -137,7 +138,7 @@ def main():
         errors = dict(zip(['CA', 'CB', 'CO', 'N', 'H'], args.errors))
     else:
         errors = DEFAULT_ERRORS
-        print(f"Using default errors: {errors}", file=sys.stderr)
+        print(f"Using default SHIFTX2 errors: {errors}", file=sys.stderr)
 
     data = parse_shiftx(args.input)
     if not data:
