@@ -25,12 +25,13 @@ import matplotlib.pyplot as plt
 import matplotlib.ticker as ticker
 
 #global_linewidth = 1.0
+#global_linewidth = 0.2
 global_linewidth = 0.2
 #global_contourmpl = 1.10  # Most peaks
 global_contourmpl = 1.15   # For some peaks required
 
 class Spectrum:
-    def __init__(self, filepath, color, contour_levels, linewidth=global_linewidth):
+    def __init__(self, filepath, color, contour_levels, linewidth=global_linewidth, shift_1h=0.0, shift_15n=0.0):
         # Read the spectrum data
         self.dic, self.data = ng.pipe.read(filepath)
         self.color = color
@@ -42,6 +43,12 @@ class Spectrum:
         self.uc_1h = ng.pipe.make_uc(self.dic, self.data, 1)
         self.x0, self.x1 = self.uc_1h.ppm_limits()
         self.y0, self.y1 = self.uc_15n.ppm_limits()
+
+        # (Optional) Apply shifts (like CCPN referencing)
+        self.x0 = self.x0 + shift_1h
+        self.x1 = self.x1 + shift_1h
+        self.y0 = self.y0 + shift_15n
+        self.y1 = self.y1 + shift_15n
 
     def plot_spectrum(self, ax, xlim, ylim):
         # Plot the spectrum on the provided axis with user-defined xlim and ylim
@@ -91,22 +98,21 @@ def calculate_aspect_ratio(user_x_lim, user_ylim):
 def loadSpectra(globalScale):
     contour_mpl = global_contourmpl
     spectra = [
-        Spectrum(filepath="monoUb_0eq.ft2", color='black', contour_levels=[globalScale * 8.0e5 * contour_mpl ** x for x in range(20)]),
-        Spectrum(filepath="monoUb_0.25eq.ft2", color='blue', contour_levels=[globalScale * 7.5e5 * contour_mpl ** x for x in range(20)]),
-        Spectrum(filepath="monoUb_0.5eq.ft2", color='green', contour_levels=[globalScale * 5.0e5 * contour_mpl ** x for x in range(20)]),
-        Spectrum(filepath="monoUb_0.75eq.ft2", color='orange', contour_levels=[globalScale * 5.0e5 * contour_mpl ** x for x in range(20)]),
-        Spectrum(filepath="monoUb_1eq.ft2", color='cyan', contour_levels=[globalScale * 5.0e5 * contour_mpl ** x for x in range(20)]),
-        Spectrum(filepath="monoUb_2eq.ft2", color='purple', contour_levels=[globalScale * 5.0e5 * contour_mpl ** x for x in range(20)]),
-        Spectrum(filepath="monoUb_4eq.ft2", color='grey', contour_levels=[globalScale * 5.0e5 * contour_mpl ** x for x in range(20)]),
-        Spectrum(filepath="monoUb_8eq.ft2", color='red', contour_levels=[globalScale * 5.0e5 * contour_mpl ** x for x in range(20)]),
+        Spectrum(filepath="1.ft2", color='black', contour_levels=[globalScale * 4.0e5 * contour_mpl ** x for x in range(30)],
+                shift_1h=0.0,       # Optional: ppm shift in 1H
+                shift_15n=-0.0),    # ppm shift in 15N
+
+        Spectrum(filepath="2eq.ft2", color='red', contour_levels=[globalScale * 1.5e5 * contour_mpl ** x for x in range(30)],
+                shift_1h=0.0,       # ppm shift in 1H
+                shift_15n=-0.0),    # ppm shift in 15N
     ]
     return spectra
 
 # --- Full ---
 # Define the region of interest (xlim and ylim in ppm)
-user_xlim = (10.2, 6.5)
-user_ylim = (131.5, 101.0)
-plot_multiple_spectra(loadSpectra(4.5), "full_distal.pdf", xlim=user_xlim, ylim=user_ylim)
+user_xlim = (10.2, 6.0)
+user_ylim = (135, 101.0)
+plot_multiple_spectra(loadSpectra(4.5), "full.pdf", xlim=user_xlim, ylim=user_ylim)
 
 
 mpl.rcParams['font.size'] = 16            # default font size
@@ -116,6 +122,6 @@ mpl.rcParams['xtick.labelsize'] = 14      # x tick labels
 mpl.rcParams['ytick.labelsize'] = 14      # y tick labels
 
 # --- Residue Zoom-up ---
-user_xlim = (10.25, 9.85)
-user_ylim = (124.0, 121.0)
-plot_multiple_spectra(loadSpectra(1.8), "C779.pdf", xlim=user_xlim, ylim=user_ylim)
+#user_xlim = (10.25, 9.85)
+#user_ylim = (124.0, 121.0)
+#plot_multiple_spectra(loadSpectra(1.8), "C779.pdf", xlim=user_xlim, ylim=user_ylim)
