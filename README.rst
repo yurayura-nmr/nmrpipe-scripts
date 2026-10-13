@@ -1,8 +1,13 @@
-nmrpipe-scripts
-"""""""""""""""
-Collection of nmrpipe scripts for processing of common biomolecular NMR experiments
+# nmrpipe-scripts
 
-others (nmr-tools)
-""""""""""""""""""
+Collection of NMRPipe scripts for processing common biomolecular NMR experiments.
 
-Also contains some notes on the automatic assignment program FLYA and how to use it from ccpNmr analysis version 2.
+A tutorial on how to use these scripts is available here:  
+[NMRPipe tutorial in MedSciLearn](https://github.com/yurayura-nmr/MedSciLearn/tree/main/nmrPipe)
+
+## Other NMR tools
+
+This repository also contains notes on:
+
+- The automatic assignment program [FLYA](https://www.bio.uzh.ch/plueckthun/antibody/nmr/fl ya.html)
+- Using FLYA from CCPNmr Analysis version 2
